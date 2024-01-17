@@ -6,4 +6,5 @@ class PokurimStates(StatesGroup):
     set_age = State()
     set_prefs = State()
     idle = State()
+    settings = State()
     search = State()

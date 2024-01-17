@@ -1,13 +1,11 @@
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 
 from database import database as db
 from bot_states import PokurimStates
-from bot import database
-
-connection = db.create_connection('bot_database.db')
+from init import database
 
 router = Router()
 
@@ -23,7 +21,16 @@ async def cmd_start(message: Message, state: FSMContext):
         await message.answer(text='Пожалуйста введите имя пользователя.')
         await state.set_state(PokurimStates.set_name)
     else:
+        kb = [
+            [
+                KeyboardButton(text="Поиск"),
+                KeyboardButton(text="Настройки")
+            ],
+        ]
+        keyboard = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True,)
+
         await message.answer(text=f'Добро пожаловать {user_name[0][0]} в бота "Покурим"')
+        await message.answer(text='Выберите действие:', reply_markup=keyboard)
         await state.set_state(PokurimStates.idle)
 
 

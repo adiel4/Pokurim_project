@@ -1,15 +1,12 @@
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.enums import ContentType
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 
 from bot_states import PokurimStates
-from database import postgres_database
+from init import database
 
 router = Router()
-
-database = postgres_database.Database('pokurim_bot', 'postgres', 'adilet321')
-database.connect()
 
 
 @router.message(
@@ -20,6 +17,8 @@ async def set_user_name(message: Message, state: FSMContext):
         await message.answer(text='ИМЯ ПИШЕТСЯ ТЕКСТОМ')
         return None
     else:
+        if message.text.lower() == 'адель':
+            await message.reply('Добро пожаловать падаван')
         await message.reply('Имя пользователя сохранено')
         await message.answer(text='Введите ваш возраст.')
         update_cond = f"user_id = {message.from_user.id}"
@@ -33,7 +32,7 @@ async def set_user_name(message: Message, state: FSMContext):
 )
 async def set_user_age(message: Message, state: FSMContext):
     if message.content_type != ContentType.TEXT:
-        await message.answer(text='Тебя просят возраст указать а не файл скидвать.')
+        await message.answer(text='Тебя просят возраст указать а не файл скидывать.')
         return None
     else:
         try:
@@ -66,5 +65,50 @@ async def set_user_prefs(message: Message, state: FSMContext):
         update_cond = f"user_id = {message.from_user.id}"
         data_to_update = {"user_prefs": message.text}
         database.update_data('user_table', data_to_update, update_cond)
-        await state.set_state(PokurimStates.set_prefs)
+
+        kb = [
+            [
+                KeyboardButton(text="Поиск"),
+                KeyboardButton(text="Настройки")
+            ],
+        ]
+        keyboard = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, )
+        await message.answer(text='Выберите действие:', reply_markup=keyboard)
         await state.set_state(PokurimStates.idle)
+
+
+@router.message(
+    PokurimStates.idle
+)
+async def ans_idle(message: Message, state: FSMContext):
+    match message.text.lower():
+        case 'настройки':
+            kb = [
+                [
+                    KeyboardButton(text="Предпочтения"),
+                    KeyboardButton(text="Есть зажигалка?"),
+                    KeyboardButton(text="Есть сиги?")
+                ],
+            ]
+            keyboard = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, )
+            await message.answer('Давайте менять настройки', reply_markup=keyboard)
+        case 'поиск':
+            kb = [
+                [
+                    KeyboardButton(text="Отмена"),
+                ],
+            ]
+            keyboard = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, )
+            await message.answer('Поехали искать', reply_markup=keyboard)
+        case 'отмена':
+            kb = [
+                [
+                    KeyboardButton(text="Поиск"),
+                    KeyboardButton(text="Настройки")
+                ],
+            ]
+            keyboard = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, )
+            await message.answer('Поиск отменен', reply_markup=keyboard)
+            await state.set_state(PokurimStates.idle)
+        case _:
+            await message.reply('Бот в разработке просим чуточку подождать')

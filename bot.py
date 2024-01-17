@@ -8,8 +8,6 @@ from database import postgres_database
 from config_reader import config
 from handlers import common, registration
 
-database = postgres_database.Database('pokurim_bot', 'postgres', 'adilet321')
-
 
 async def main():
     logging.basicConfig(
@@ -25,4 +23,3 @@ async def main():
 
 if __name__ == '__main__':
     asyncio.run(main())
-    database.connect()

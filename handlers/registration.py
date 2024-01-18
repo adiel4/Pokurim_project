@@ -98,6 +98,7 @@ async def ans_idle(message: Message, state: FSMContext):
             keyboard = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, )
             await message.answer('Давайте менять настройки', reply_markup=keyboard)
         case 'есть сиги?':
+            await state.set_state(PokurimStates.set_cigars)
             await message.answer('Ответьте на вопрос', reply_markup=ReplyKeyboardRemove())
             builder = InlineKeyboardBuilder()
             builder.add(InlineKeyboardButton(
@@ -114,6 +115,7 @@ async def ans_idle(message: Message, state: FSMContext):
             ))
             await message.answer('Есть сиги?', reply_markup=builder.as_markup())
         case 'есть зажигалка?':
+            await state.set_state(PokurimStates.set_lighter)
             await message.answer('Ответьте на вопрос', reply_markup=ReplyKeyboardRemove())
             builder = InlineKeyboardBuilder()
             builder.add(InlineKeyboardButton(

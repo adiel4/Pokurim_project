@@ -23,21 +23,19 @@ async def process_callback_button1(callback_query: CallbackQuery, state: FSMCont
     await state.set_state(PokurimStates.idle)
 
 
-@router.callback_query(F.data.lower().contains('jig'))
+@router.callback_query(F.data.lower().contains('jig'), PokurimStates.set_lighter)
 async def process_callback_button1(callback_query: CallbackQuery, state: FSMContext):
     match callback_query.data.lower():
         case 'yes_jig':
             await callback_query.message.answer('Подожжешь?')
         case 'no_jig':
             await callback_query.message.answer('А как поджигать?')
-    await state.set_state(PokurimStates.idle)
 
 
-@router.callback_query(F.data.lower().contains('sig'))
+@router.callback_query(F.data.lower().contains('sig'), PokurimStates.set_cigars)
 async def process_callback_button1(callback_query: CallbackQuery, state: FSMContext):
     match callback_query.data.lower():
         case 'yes_sig':
             await callback_query.message.answer('Значит поделишься?')
         case 'no_sig':
             await callback_query.message.answer('Значит будем стрелять?')
-    await state.set_state(PokurimStates.idle)

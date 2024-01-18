@@ -1,7 +1,9 @@
 from aiogram import Router, F
 from aiogram.enums import ContentType
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, InlineKeyboardMarkup, \
+    InlineKeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot_states import PokurimStates
 from init import database
@@ -87,11 +89,55 @@ async def ans_idle(message: Message, state: FSMContext):
                 [
                     KeyboardButton(text="Предпочтения"),
                     KeyboardButton(text="Есть зажигалка?"),
-                    KeyboardButton(text="Есть сиги?")
-                ],
+
+                ], [
+                    KeyboardButton(text="Есть сиги?"),
+                    KeyboardButton(text="Назад")
+                ]
             ]
             keyboard = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, )
             await message.answer('Давайте менять настройки', reply_markup=keyboard)
+        case 'есть сиги?':
+            await message.answer('Ответьте на вопрос', reply_markup=ReplyKeyboardRemove())
+            builder = InlineKeyboardBuilder()
+            builder.add(InlineKeyboardButton(
+                text='Да',
+                callback_data='yes_sig'
+            ))
+            builder.add(InlineKeyboardButton(
+                text='Нет',
+                callback_data='no_sig'
+            ))
+            builder.add(InlineKeyboardButton(
+                text='Назад',
+                callback_data='back'
+            ))
+            await message.answer('Есть сиги?', reply_markup=builder.as_markup())
+        case 'есть зажигалка?':
+            await message.answer('Ответьте на вопрос', reply_markup=ReplyKeyboardRemove())
+            builder = InlineKeyboardBuilder()
+            builder.add(InlineKeyboardButton(
+                text='Да',
+                callback_data='yes_jig'
+            ))
+            builder.add(InlineKeyboardButton(
+                text='Нет',
+                callback_data='no_jig'
+            ))
+            builder.add(InlineKeyboardButton(
+                text='Назад',
+                callback_data='back'
+            ))
+            await message.answer('Есть зажигалка?', reply_markup=builder.as_markup())
+        case 'назад':
+            kb = [
+                [
+                    KeyboardButton(text="Поиск"),
+                    KeyboardButton(text="Настройки")
+                ],
+            ]
+            keyboard = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, )
+            await message.answer('Можем начинать поиск?', reply_markup=keyboard)
         case 'поиск':
             kb = [
                 [

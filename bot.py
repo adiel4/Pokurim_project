@@ -6,7 +6,7 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from database import postgres_database
 
 from config_reader import config
-from handlers import common, registration
+from handlers import common, registration, pokurim_callbacks
 
 
 async def main():
@@ -18,6 +18,7 @@ async def main():
     bot = Bot(config.bot_token.get_secret_value())
     dp.include_router(common.router)
     dp.include_router(registration.router)
+    dp.include_router(pokurim_callbacks.router)
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
 

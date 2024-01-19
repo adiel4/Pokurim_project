@@ -4,7 +4,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 
 from bot_states import PokurimStates
-from init import database
+from init import database, sample_data, main_keyboard
+import cache_methods as ch_meth
 
 router = Router()
 
@@ -20,17 +21,14 @@ async def cmd_start(message: Message, state: FSMContext):
         await message.answer(text='Пожалуйста введите имя пользователя.')
         await state.set_state(PokurimStates.set_name)
     else:
-        kb = [
-            [
-                KeyboardButton(text="Поиск"),
-                KeyboardButton(text="Настройки")
-            ],
-        ]
-        keyboard = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True,)
-
         await message.answer(text=f'Добро пожаловать {user_name[0][0]} в бота "Покурим"')
-        await message.answer(text='Выберите действие:', reply_markup=keyboard)
+        await message.answer(text='Выберите действие:', reply_markup=main_keyboard)
         await state.set_state(PokurimStates.idle)
+        user_data = sample_data
+        user_data.update({"prefs": database.select_data('user_table', columns='user_prefs',
+                                                        condition=f'user_id = {message.from_user.id}')[0][0]})
+
+        ch_meth.set_cached_value(message.from_user.id, str(user_data))
 
 
 @router.message(Command(commands=['help']))

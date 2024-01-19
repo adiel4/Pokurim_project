@@ -7,6 +7,7 @@ from database import postgres_database
 
 from config_reader import config
 from handlers import common, registration, pokurim_callbacks
+from init import redis_client
 
 
 async def main():
@@ -23,4 +24,9 @@ async def main():
 
 
 if __name__ == '__main__':
+    try:
+        redis_client.flushall()
+    except ConnectionError:
+        print('Error while connecting to redis')
+        exit()
     asyncio.run(main())

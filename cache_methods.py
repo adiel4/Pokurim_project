@@ -5,7 +5,7 @@ from init import redis_client
 import decimal
 
 
-def get_cached_value(name: str):
+def get_cached_value(name):
     value_str = redis_client.get(name)
     if not value_str:
         return None
@@ -17,6 +17,14 @@ def set_cached_value(value_arr, name: str):
     value_str = json.dumps(value_arr, default=decimal_encoder)
     redis_client.set(name, value_str)
     return value_arr
+
+
+def delete_cached_value(key):
+    try:
+        redis_client.delete(key)
+        return 1
+    except:
+        return 0
 
 
 def set_cached_value_by_days(value_arr, name: str, expire_days: int):

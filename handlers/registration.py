@@ -4,9 +4,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, InlineKeyboardMarkup, \
     InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-
+import cache_methods as ch_meth
 from bot_states import PokurimStates
-from init import database, redis_client, main_keyboard
+from init import database, redis_client, main_keyboard, sample_data
 
 router = Router()
 
@@ -63,10 +63,15 @@ async def set_user_prefs(message: Message, state: FSMContext):
         await message.answer(text='Пожалуйста опишите свои предпочтения')
         return None
     else:
-        await message.reply('Ваши пожелания сохранены. Добро пожаловать в бот "Покурим"')
+        await message.reply('Ваши пожелания сохранены.')
         update_cond = f"user_id = {message.from_user.id}"
         data_to_update = {"user_prefs": message.text}
         database.update_data('user_table', data_to_update, update_cond)
+
+        user_data = sample_data
+        user_data.update({"prefs": message.text})
+
+        ch_meth.set_cached_value(message.from_user.id, user_data)
 
         await message.answer(text='Выберите действие:', reply_markup=main_keyboard)
         await state.set_state(PokurimStates.idle)
@@ -91,6 +96,9 @@ async def ans_idle(message: Message, state: FSMContext):
             keyboard = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, )
             await message.answer('Давайте менять настройки', reply_markup=keyboard)
         case 'есть сиги?':
+            user_data = ch_meth.get_cached_value(str(message.from_user.id))
+            cigars = user_data.get("cigarretes")
+            await message.message.answer('У вас ' + "есть сигареты" if cigars else "нет сигарет")
             await state.set_state(PokurimStates.set_cigars)
             await message.answer('Ответьте на вопрос', reply_markup=ReplyKeyboardRemove())
             builder = InlineKeyboardBuilder()
@@ -108,6 +116,9 @@ async def ans_idle(message: Message, state: FSMContext):
             ))
             await message.answer('Есть сиги?', reply_markup=builder.as_markup())
         case 'есть зажигалка?':
+            user_data = ch_meth.get_cached_value(str(message.from_user.id))
+            cigars = user_data.get("cigarretes")
+            await message.message.answer('У вас ' + "есть сигареты" if cigars else "нет сигарет")
             await state.set_state(PokurimStates.set_lighter)
             await message.answer('Ответьте на вопрос', reply_markup=ReplyKeyboardRemove())
             builder = InlineKeyboardBuilder()
@@ -139,6 +150,24 @@ async def ans_idle(message: Message, state: FSMContext):
         case 'отмена':
             await message.answer('Поиск отменен', reply_markup=main_keyboard)
             await state.set_state(PokurimStates.idle)
+        case 'предпочтения':
+            user_prefs = database.select_data('user_table', columns='user_prefs',
+                                              condition=f'user_id = {message.from_user.id}')
+            await message.reply(f"Ваши предпочтения: {user_prefs[0][0]}")
+            builder = InlineKeyboardBuilder()
+            builder.add(InlineKeyboardButton(
+                text='Да',
+                callback_data='yes_prefs'
+            ))
+            builder.add(InlineKeyboardButton(
+                text='Нет',
+                callback_data='no_prefs'
+            ))
+            builder.add(InlineKeyboardButton(
+                text='Назад',
+                callback_data='back'
+            ))
+            await message.answer('Хотите поменять свои предпочтения?', reply_markup=builder.as_markup())
         case _:
             await message.reply('Бот в разработке просим чуточку подождать')
 

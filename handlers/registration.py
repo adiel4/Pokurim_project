@@ -6,7 +6,7 @@ from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, ReplyKey
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot_states import PokurimStates
-from init import database
+from init import database, redis_client, main_keyboard
 
 router = Router()
 
@@ -68,14 +68,7 @@ async def set_user_prefs(message: Message, state: FSMContext):
         data_to_update = {"user_prefs": message.text}
         database.update_data('user_table', data_to_update, update_cond)
 
-        kb = [
-            [
-                KeyboardButton(text="Поиск"),
-                KeyboardButton(text="Настройки")
-            ],
-        ]
-        keyboard = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, )
-        await message.answer(text='Выберите действие:', reply_markup=keyboard)
+        await message.answer(text='Выберите действие:', reply_markup=main_keyboard)
         await state.set_state(PokurimStates.idle)
 
 
@@ -132,31 +125,40 @@ async def ans_idle(message: Message, state: FSMContext):
             ))
             await message.answer('Есть зажигалка?', reply_markup=builder.as_markup())
         case 'назад':
-            kb = [
-                [
-                    KeyboardButton(text="Поиск"),
-                    KeyboardButton(text="Настройки")
-                ],
-            ]
-            keyboard = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, )
-            await message.answer('Можем начинать поиск?', reply_markup=keyboard)
+            await message.answer('Можем начинать поиск?', reply_markup=main_keyboard)
         case 'поиск':
             kb = [
                 [
-                    KeyboardButton(text="Отмена"),
-                ],
+                    KeyboardButton(text="Передать", request_location=True)],
+                [KeyboardButton(text="Не передавать")
+                 ],
             ]
             keyboard = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, )
-            await message.answer('Поехали искать', reply_markup=keyboard)
+            await message.answer('Передать?', reply_markup=keyboard)
+            await state.set_state(PokurimStates.set_coords)
         case 'отмена':
-            kb = [
-                [
-                    KeyboardButton(text="Поиск"),
-                    KeyboardButton(text="Настройки")
-                ],
-            ]
-            keyboard = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, )
-            await message.answer('Поиск отменен', reply_markup=keyboard)
+            await message.answer('Поиск отменен', reply_markup=main_keyboard)
             await state.set_state(PokurimStates.idle)
         case _:
             await message.reply('Бот в разработке просим чуточку подождать')
+
+
+@router.message(
+    PokurimStates.set_coords
+)
+async def set_coords(message: Message, state: FSMContext):
+    if message.content_type == ContentType.LOCATION:
+        await message.answer('Геопозиция получена', reply_markup=ReplyKeyboardRemove())
+        latitude = message.location.latitude
+        longtitude = message.location.longitude
+        await message.delete()
+        builder = InlineKeyboardBuilder()
+        builder.add(InlineKeyboardButton(
+            text='Отмена',
+            callback_data='cancel'
+        ))
+        await message.answer('Начинаем поиск..', reply_markup=builder.as_markup())
+        await state.set_state(PokurimStates.search)
+    elif message.text.lower() == 'не передавать':
+        await message.answer('Поиск отменен', reply_markup=main_keyboard)
+        await state.set_state(PokurimStates.idle)

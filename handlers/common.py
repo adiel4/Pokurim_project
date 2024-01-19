@@ -3,7 +3,6 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 
-from database import database as db
 from bot_states import PokurimStates
 from init import database
 

@@ -7,6 +7,7 @@ class PokurimStates(StatesGroup):
     set_prefs = State()
     set_lighter = State()
     set_cigars = State()
+    set_coords = State()
     idle = State()
     settings = State()
     search = State()

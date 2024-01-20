@@ -8,6 +8,7 @@ from database import postgres_database
 from config_reader import config
 from handlers import common, registration, pokurim_callbacks
 from init import redis_client
+from test import process_users
 
 
 async def main():
@@ -22,6 +23,8 @@ async def main():
     dp.include_router(pokurim_callbacks.router)
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
+    await process_users(redis_client, bot)
+
 
 if __name__ == '__main__':
     try:
@@ -29,4 +32,9 @@ if __name__ == '__main__':
     except ConnectionError:
         print('Error while connecting to redis')
         exit()
-    asyncio.run(main())
+
+    loop = asyncio.get_event_loop()
+    try:
+        loop.run_until_complete(main())
+    finally:
+        loop.close()

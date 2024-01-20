@@ -69,9 +69,9 @@ async def set_user_prefs(message: Message, state: FSMContext):
         database.update_data('user_table', data_to_update, update_cond)
 
         user_data = sample_data
-        user_data.update({"prefs": message.text})
+        user_data["prefs"] = message.text
 
-        ch_meth.set_cached_value(message.from_user.id, user_data)
+        ch_meth.set_cached_value(user_data, str(message.from_user.id))
 
         await message.answer(text='Выберите действие:', reply_markup=main_keyboard)
         await state.set_state(PokurimStates.idle)
@@ -81,6 +81,7 @@ async def set_user_prefs(message: Message, state: FSMContext):
     PokurimStates.idle
 )
 async def ans_idle(message: Message, state: FSMContext):
+    user_data = ch_meth.get_cached_value(str(message.from_user.id))
     match message.text.lower():
         case 'настройки':
             kb = [
@@ -96,11 +97,10 @@ async def ans_idle(message: Message, state: FSMContext):
             keyboard = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, )
             await message.answer('Давайте менять настройки', reply_markup=keyboard)
         case 'есть сиги?':
-            user_data = ch_meth.get_cached_value(str(message.from_user.id))
-            cigars = user_data.get("cigarretes")
-            await message.message.answer('У вас ' + "есть сигареты" if cigars else "нет сигарет")
+            cigars = user_data.get("cigarettes")
+            await message.answer('У вас ' + ("есть сигареты" if cigars else "нет сигарет"),
+                                 reply_markup=ReplyKeyboardRemove())
             await state.set_state(PokurimStates.set_cigars)
-            await message.answer('Ответьте на вопрос', reply_markup=ReplyKeyboardRemove())
             builder = InlineKeyboardBuilder()
             builder.add(InlineKeyboardButton(
                 text='Да',
@@ -116,11 +116,10 @@ async def ans_idle(message: Message, state: FSMContext):
             ))
             await message.answer('Есть сиги?', reply_markup=builder.as_markup())
         case 'есть зажигалка?':
-            user_data = ch_meth.get_cached_value(str(message.from_user.id))
-            cigars = user_data.get("cigarretes")
-            await message.message.answer('У вас ' + "есть сигареты" if cigars else "нет сигарет")
+            lighter = user_data.get('lighter')
+            await message.answer('У вас ' + ("есть зажигалка" if lighter else "нет зажигалки"),
+                                 reply_markup=ReplyKeyboardRemove())
             await state.set_state(PokurimStates.set_lighter)
-            await message.answer('Ответьте на вопрос', reply_markup=ReplyKeyboardRemove())
             builder = InlineKeyboardBuilder()
             builder.add(InlineKeyboardButton(
                 text='Да',
@@ -176,10 +175,14 @@ async def ans_idle(message: Message, state: FSMContext):
     PokurimStates.set_coords
 )
 async def set_coords(message: Message, state: FSMContext):
+    user_data = ch_meth.get_cached_value(str(message.from_user.id))
     if message.content_type == ContentType.LOCATION:
         await message.answer('Геопозиция получена', reply_markup=ReplyKeyboardRemove())
         latitude = message.location.latitude
-        longtitude = message.location.longitude
+        longitude = message.location.longitude
+        user_data['latitude'] = latitude
+        user_data['longitude'] = longitude
+        ch_meth.set_cached_value(user_data, str(message.from_user.id))
         await message.delete()
         builder = InlineKeyboardBuilder()
         builder.add(InlineKeyboardButton(

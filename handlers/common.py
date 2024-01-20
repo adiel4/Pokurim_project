@@ -28,7 +28,7 @@ async def cmd_start(message: Message, state: FSMContext):
         user_data.update({"prefs": database.select_data('user_table', columns='user_prefs',
                                                         condition=f'user_id = {message.from_user.id}')[0][0]})
 
-        ch_meth.set_cached_value(message.from_user.id, str(user_data))
+        ch_meth.set_cached_value(user_data, str(message.from_user.id))
 
 
 @router.message(Command(commands=['help']))

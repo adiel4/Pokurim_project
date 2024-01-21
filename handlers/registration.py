@@ -1,3 +1,5 @@
+import datetime
+
 from aiogram import Router, F
 from aiogram.enums import ContentType
 from aiogram.fsm.context import FSMContext
@@ -182,6 +184,8 @@ async def set_coords(message: Message, state: FSMContext):
         longitude = message.location.longitude
         user_data['latitude'] = latitude
         user_data['longitude'] = longitude
+        user_data['is_searching'] = True
+        user_data['search_datetime'] = datetime.datetime.now()
         ch_meth.set_cached_value(user_data, str(message.from_user.id))
         await message.delete()
         builder = InlineKeyboardBuilder()
@@ -191,6 +195,7 @@ async def set_coords(message: Message, state: FSMContext):
         ))
         await message.answer('Начинаем поиск..', reply_markup=builder.as_markup())
         await state.set_state(PokurimStates.search)
+        print(user_data)
     elif message.text.lower() == 'не передавать':
         await message.answer('Поиск отменен', reply_markup=main_keyboard)
         await state.set_state(PokurimStates.idle)

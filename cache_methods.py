@@ -15,6 +15,8 @@ def get_cached_value(name):
 
 def set_cached_value(value_arr, name: str):
     value_str = json.dumps(value_arr, default=decimal_encoder)
+    name = name.decode('utf-8') if isinstance(name, bytes) else name
+    print("Setting key:", name)
     redis_client.set(name, value_str)
     return value_arr
 
@@ -29,7 +31,8 @@ def delete_cached_value(key):
 
 def set_cached_value_by_days(value_arr, name: str, expire_days: int):
     value_str = json.dumps(value_arr, default=decimal_encoder)
-    redis_client.set(name, value_str, ex=timedelta(days=expire_days))
+    redis_client.set(name, value_str)
+    redis_client.expire(name, timedelta(days=expire_days))
     return value_arr
 
 

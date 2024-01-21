@@ -27,7 +27,9 @@ async def cmd_start(message: Message, state: FSMContext):
         user_data = sample_data
         user_data.update({"prefs": database.select_data('user_table', columns='user_prefs',
                                                         condition=f'user_id = {message.from_user.id}')[0][0]})
-
+        user_data.update({"chat_id": database.select_data('user_table', columns='chat_id',
+                                                          condition=f'user_id = {message.from_user.id}')[0][0]})
+        print(user_data)
         ch_meth.set_cached_value(user_data, str(message.from_user.id))
 
 

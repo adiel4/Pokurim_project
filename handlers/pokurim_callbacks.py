@@ -53,5 +53,23 @@ async def process_callback_button1(callback_query: CallbackQuery, state: FSMCont
 
 @router.callback_query(F.data.lower() == 'cancel', PokurimStates.search)
 async def cancel_search(callback: CallbackQuery, state: FSMContext):
+    user_data = ch_meth.get_cached_value(str(callback.from_user.id))
+    user_data['is_searching'] = False
+    ch_meth.set_cached_value(user_data, str(callback.from_user.id))
+    print(user_data)
     await callback.message.answer('Поиск отменен', reply_markup=main_keyboard)
     await state.set_state(PokurimStates.idle)
+
+
+@router.callback_query(F.data.lower().contains('show'), PokurimStates.search)
+async def process_callback_button1(callback_query: CallbackQuery, state: FSMContext):
+    match callback_query.data.lower():
+        case 'show':
+
+            await state.set_state(PokurimStates.idle)
+            pass
+        case 'dont_show':
+            await state.set_state(PokurimStates.idle)
+            pass
+        case _:
+            pass

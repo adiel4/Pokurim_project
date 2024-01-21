@@ -23,15 +23,16 @@ def calculate_distance(coord1, coord2):
 async def process_users(redis_cl: redis.Redis, bot: Bot):
     while True:
         all_users_ids = redis_cl.keys()
-
         for user_id in all_users_ids:
             user_data = cache_methods.get_cached_value(user_id)
-            user_data['search_datetime'] = datetime.datetime.strptime(user_data['search_datetime'],
-                                                                      '%Y-%m-%d %H:%M:%S.%f')
             if (not user_data['is_searching']) or \
-                    user_data['search_datetime'] - datetime.datetime.now() >= datetime.timedelta(minutes=20) or \
+                    datetime.datetime.strptime(user_data['search_datetime'],
+                                               '%Y-%m-%d %H:%M:%S.%f') - datetime.datetime.now() >= datetime.timedelta(
+                minutes=20) or \
                     user_data['message_sent'] > 0:
                 continue
+            user_data['search_datetime'] = datetime.datetime.strptime(user_data['search_datetime'],
+                                                                      '%Y-%m-%d %H:%M:%S.%f')
             user_coords = (user_data['latitude'], user_data['longitude'])
             nearby_user_ids = [other_user_id for other_user_id in all_users_ids
                                if user_id != other_user_id and
@@ -62,10 +63,14 @@ async def process_users(redis_cl: redis.Redis, bot: Bot):
                 ))
                 await bot.send_message(chat_id=user_data['chat_id'], text='Найден новый человек',
                                        reply_markup=builder.as_markup())
+
+                nearby_user_logins = [json.loads(redis_cl.get(uid).decode('utf-8'))['login'] for uid in nearby_user_ids]
+                user_data['user_ids'] = str(nearby_user_logins)
                 user_data['message_sent'] = 1
                 user_data['is_searching'] = False
                 ch_meth.set_cached_value(user_data, user_id)
                 print(closest_user_coords)
+                print(user_data)
 
         await asyncio.sleep(60)
 

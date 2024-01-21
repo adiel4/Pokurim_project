@@ -1,3 +1,5 @@
+import ast
+
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, CallbackQuery, ReplyKeyboardRemove
@@ -63,12 +65,17 @@ async def cancel_search(callback: CallbackQuery, state: FSMContext):
 
 @router.callback_query(F.data.lower().contains('show'), PokurimStates.search)
 async def process_callback_button1(callback_query: CallbackQuery, state: FSMContext):
+    user_data = ch_meth.get_cached_value(str(callback_query.from_user.id))
+    my_list = ast.literal_eval(user_data['user_ids'])
     match callback_query.data.lower():
         case 'show':
-
+            for ids in my_list:
+                await callback_query.message.answer(text=f'Найден пользователь: @{ids}')
+            await callback_query.message.answer('Поиск прерван, вы в главном меню.', reply_markup=main_keyboard)
             await state.set_state(PokurimStates.idle)
             pass
         case 'dont_show':
+            await callback_query.message.answer('Поиск прерван, вы в главном меню.', reply_markup=main_keyboard)
             await state.set_state(PokurimStates.idle)
             pass
         case _:

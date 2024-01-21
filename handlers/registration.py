@@ -72,7 +72,7 @@ async def set_user_prefs(message: Message, state: FSMContext):
 
         user_data = sample_data
         user_data["prefs"] = message.text
-
+        user_data['login'] = message.from_user.username
         ch_meth.set_cached_value(user_data, str(message.from_user.id))
 
         await message.answer(text='Выберите действие:', reply_markup=main_keyboard)

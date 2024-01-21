@@ -49,4 +49,6 @@ def decimal_encoder(obj):
         return str(obj)
     elif isinstance(obj, datetime.datetime):
         return str(obj)
+    elif isinstance(obj, list):
+        return str(obj)
     raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable.{obj}")

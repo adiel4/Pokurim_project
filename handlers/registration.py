@@ -27,7 +27,11 @@ async def set_user_name(message: Message, state: FSMContext):
         await message.answer(text='Введите ваш возраст.')
         update_cond = f"user_id = {message.from_user.id}"
         data_to_update = {"username": message.text}
-        database.update_data('user_table', data_to_update, update_cond)
+        try:
+            database.update_data('user_table', data_to_update, update_cond)
+        except:
+            await message.reply('Возникла ошибка попробуйте снова.')
+            return None
         await state.set_state(PokurimStates.set_age)
 
 
@@ -50,7 +54,11 @@ async def set_user_age(message: Message, state: FSMContext):
                 await message.answer(text='Прошу кратко описать свои предпочтения')
                 update_cond = f"user_id = {message.from_user.id}"
                 data_to_update = {"user_age": message.text}
-                database.update_data('user_table', data_to_update, update_cond)
+                try:
+                    database.update_data('user_table', data_to_update, update_cond)
+                except:
+                    await message.reply('Возникла ошибка попробуйте снова.')
+                    return None
                 await state.set_state(PokurimStates.set_prefs)
             else:
                 await message.answer(text='Про возраст пиздеть не надо')
@@ -68,8 +76,11 @@ async def set_user_prefs(message: Message, state: FSMContext):
         await message.reply('Ваши пожелания сохранены.')
         update_cond = f"user_id = {message.from_user.id}"
         data_to_update = {"user_prefs": message.text}
-        database.update_data('user_table', data_to_update, update_cond)
-
+        try:
+            database.update_data('user_table', data_to_update, update_cond)
+        except:
+            await message.reply('Возникла ошибка попробуйте снова.')
+            return None
         user_data = sample_data
         user_data["prefs"] = message.text
         user_data['login'] = message.from_user.username

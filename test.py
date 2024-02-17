@@ -76,15 +76,9 @@ async def process_users(redis_cl: redis.Redis, bot: Bot):
 
 
 async def main():
-    # Подключение к Redis
-    # Инициализация бота
     bot = Bot(config.bot_token.get_secret_value())
-
-    # Запуск асинхронной функции обработки пользователей
     await asyncio.gather(process_users(redis_client, bot))
 
-
-# Запуск асинхронного цикла
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     loop.run_until_complete(main())

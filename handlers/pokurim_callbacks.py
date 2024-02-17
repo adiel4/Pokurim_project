@@ -2,10 +2,10 @@ import ast
 
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, CallbackQuery, ReplyKeyboardRemove
+from aiogram.types import CallbackQuery, ReplyKeyboardRemove
 import cache_methods as ch_meth
 from bot_states import PokurimStates
-from init import redis_client, main_keyboard
+from init import main_keyboard
 
 router = Router()
 

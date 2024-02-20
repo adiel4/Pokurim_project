@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  bot:
+    build:
+      context: .
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      - TELEGRAM_BOT_TOKEN=6723615392:AAEWlczRfH_4HSoYWg7b-TnxBizJKP-J4CM
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - POSTGRES_DB=pokurim_bot
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=adilet321
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+
+  redis:
+    image: "redis:latest"
+
+  postgres:
+    image: "postgres:latest"
+    environment:
+      POSTGRES_DB: pokurim_bot
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: adilet321
